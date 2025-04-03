@@ -13,3 +13,14 @@ TABLESPACE pg_default;
 
 ALTER TABLE IF EXISTS public."Metodos_MFA"
     OWNER to postgres;
+
+
+---------------------------MÉTODOS MFA MYSQL---------------------------------
+
+DROP TABLE IF EXISTS `Metodos_MFA`;
+
+CREATE TABLE IF NOT EXISTS `Metodos_MFA` (
+    `tipo_metodo` VARCHAR(50) NOT NULL,
+    `id_metodo` BIGINT NOT NULL,
+    PRIMARY KEY (`id_metodo`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

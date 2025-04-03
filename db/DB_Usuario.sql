@@ -13,3 +13,17 @@ CREATE TABLE IF NOT EXISTS public."Usuario"
         ON DELETE NO ACTION
         NOT VALID
 )
+
+--------------------------------USUARIO MYSQL---------------------------------
+
+CREATE TABLE IF NOT EXISTS Usuario (
+    id_usuario BIGINT NOT NULL,
+    nombre_usuario VARCHAR(50) NOT NULL,
+    correo_usuario VARCHAR(50) NOT NULL,
+    contrasena_hash VARCHAR(50) NOT NULL,
+    metodos_mfa VARCHAR(50) NOT NULL,
+    id_metodo BIGINT NOT NULL,
+    PRIMARY KEY (id_usuario),
+    FOREIGN KEY (id_metodo) 
+        REFERENCES Metodos_MFA(id_metodo)
+)

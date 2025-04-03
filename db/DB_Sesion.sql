@@ -15,3 +15,16 @@ TABLESPACE pg_default;
 
 ALTER TABLE IF EXISTS public."Sesion"
     OWNER to postgres;
+
+
+------------------------SESIÓN MYSQL-----------------------------------
+
+DROP TABLE IF EXISTS `Sesion`;
+
+CREATE TABLE `Sesion` (
+    `id_sesion` bigint NOT NULL AUTO_INCREMENT,
+    `id_usuario` bigint NOT NULL,
+    `token_sesion` text NOT NULL,
+    `tiempo_expiracion` date NOT NULL,
+    PRIMARY KEY (`id_sesion`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

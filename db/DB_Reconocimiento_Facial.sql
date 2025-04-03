@@ -11,3 +11,11 @@ TABLESPACE pg_default;
 
 ALTER TABLE IF EXISTS public."Reconocimiento_Facial"
     OWNER to postgres;
+
+--------------------RECONOCIMIENTO FACIAL MYSQL------------------------------------
+
+DROP TABLE IF EXISTS `Reconocimiento_Facial`;
+
+CREATE TABLE `Reconocimiento_Facial` (
+    imagen_usuario VARCHAR(50) NOT NULL
+);

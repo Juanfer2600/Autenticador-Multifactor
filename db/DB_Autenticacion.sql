@@ -28,3 +28,22 @@ TABLESPACE pg_default;
 
 ALTER TABLE IF EXISTS public."Autenticación"
     OWNER to postgres;
+
+
+--------------------------------AUTENTICACIÓN MYSQL-----------------------------------
+
+DROP TABLE IF EXISTS `Autenticacion`;
+
+CREATE TABLE IF NOT EXISTS `Autenticacion`
+(
+    `id_usuario` BIGINT NOT NULL,
+    `nombre_usuario` VARCHAR(50) NOT NULL,
+    `correo_usuario` VARCHAR(50) NOT NULL,
+    `contrasena_hash` VARCHAR(50) NOT NULL,
+    `metodos_mfa` VARCHAR(50) NOT NULL,
+    `id_metodo` BIGINT NOT NULL,
+    `tipo_metodo` VARCHAR(50) NOT NULL,
+    PRIMARY KEY (`id_usuario`, `id_metodo`),
+    FOREIGN KEY (`id_metodo`) REFERENCES `Metodos_MFA` (`id_metodo`),
+    FOREIGN KEY (`id_usuario`) REFERENCES `Usuario` (`id_usuario`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
