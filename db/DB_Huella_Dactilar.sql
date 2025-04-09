@@ -11,3 +11,12 @@ TABLESPACE pg_default;
 
 ALTER TABLE IF EXISTS public."Huella_Dactilar"
     OWNER to postgres;
+
+
+-- --------------------HUELLA DACTILAR MYSQL------------------------------------
+
+DROP TABLE IF EXISTS Huella_Dactilar;
+CREATE TABLE Huella_Dactilar (
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    huella_usuario VARCHAR(255) NOT NULL
+);

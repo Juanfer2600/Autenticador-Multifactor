@@ -13,3 +13,13 @@ TABLESPACE pg_default;
 
 ALTER TABLE IF EXISTS public."Metodos_MFA"
     OWNER to postgres;
+
+
+---------------------------MÉTODOS MFA MYSQL---------------------------------
+
+DROP TABLE IF EXISTS `Metodos_MFA`;
+
+CREATE TABLE IF NOT EXISTS `Metodos_MFA` (
+    `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `tipo_metodo` VARCHAR(50) NOT NULL
+)

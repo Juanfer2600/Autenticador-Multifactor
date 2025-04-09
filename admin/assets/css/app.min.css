@@ -7765,15 +7765,15 @@ button {
   --vz-btn-active-border-color: transparent;
 }
 .btn-success {
-  --vz-btn-bg: var(--vz-success);
-  --vz-btn-border-color: var(--vz-success);
-  --vz-btn-hover-bg: var(--vz-success-text-emphasis);
-  --vz-btn-hover-border-color: var(--vz-success-text-emphasis);
+  --vz-btn-bg: var(--vz-dark);
+  --vz-btn-border-color: var(--vz-dark);
+  --vz-btn-hover-bg: var(--vz-dark-text-emphasis);
+  --vz-btn-hover-border-color: var(--vz-dark-text-emphasis);
   --vz-btn-focus-shadow-rgb: var(--vz-success-rgb);
-  --vz-btn-active-bg: var(--vz-success-text-emphasis);
-  --vz-btn-active-border-color: var(--vz-success-text-emphasis);
-  --vz-btn-disabled-bg: var(--vz-success);
-  --vz-btn-disabled-border-color: var(--vz-success);
+  --vz-btn-active-bg: var(--vz-dark-text-emphasis);
+  --vz-btn-active-border-color: var(--vz-dark-text-emphasis);
+  --vz-btn-disabled-bg: var(--vz-dark);
+  --vz-btn-disabled-border-color: var(--vz-dark);
 }
 .btn-outline-success {
   --vz-btn-color: var(--vz-success);

@@ -28,3 +28,18 @@ TABLESPACE pg_default;
 
 ALTER TABLE IF EXISTS public."Autenticación"
     OWNER to postgres;
+
+
+--------------------------------AUTENTICACIÓN MYSQL-----------------------------------
+
+DROP TABLE IF EXISTS `Autenticacion`;
+
+CREATE TABLE IF NOT EXISTS `Autenticacion`
+(
+    `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `nombre_usuario` VARCHAR(50) NOT NULL,
+    `correo_usuario` VARCHAR(50) NOT NULL,
+    `contrasena_hash` VARCHAR(50) NOT NULL,
+    `metodos_mfa` VARCHAR(50) NOT NULL,
+    `tipo_metodo` VARCHAR(50) NOT NULL
+)

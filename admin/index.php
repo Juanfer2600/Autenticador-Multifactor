@@ -26,10 +26,10 @@
 
                             <div class="card-body p-4">
                                 <div class="text-center mt-2">
-                                    <h5 class="text-primary">Bienvenido de vuelta!!!</h5>
+                                    <h5 class="text-primary">¡Welcome back!</h5>
                                 </div>
                                 <div class="p-2 mt-4">
-                                    <form action="">
+                                    <form action="assets/login.php" method="POST">
 
                                         <div class="mb-3">
                                             <label for="username" class="form-label">Username</label>
@@ -39,7 +39,7 @@
                                         <div class="mb-3">
                                             <label class="form-label" for="password-input">Password</label>
                                             <div class="position-relative auth-pass-inputgroup mb-3">
-                                                <input type="password" class="form-control pe-5 password-input" placeholder="Enter password" id="password-input">
+                                                <input type="password" class="form-control password-input" placeholder="Enter password" id="password-input">
                                                 <button class="btn btn-link position-absolute end-0 top-0 text-decoration-none text-muted password-addon material-shadow-none" type="button" id="password-addon"><i class="ri-eye-fill align-middle"></i></button>
                                             </div>
                                         </div>
