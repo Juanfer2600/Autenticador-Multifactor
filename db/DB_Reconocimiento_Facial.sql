@@ -15,7 +15,7 @@ ALTER TABLE IF EXISTS public."Reconocimiento_Facial"
 --------------------RECONOCIMIENTO FACIAL MYSQL------------------------------------
 
 DROP TABLE IF EXISTS `Reconocimiento_Facial`;
-
 CREATE TABLE `Reconocimiento_Facial` (
-    imagen_usuario VARCHAR(50) NOT NULL
+    `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `imagen_usuario` VARCHAR(50) NOT NULL
 );

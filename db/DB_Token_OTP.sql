@@ -16,7 +16,7 @@ ALTER TABLE IF EXISTS public."Token_OTP"
 --------------------------TOKEN OTP MYSQL---------------------------------
 
 DROP TABLE IF EXISTS Token_OTP;
-
 CREATE TABLE Token_OTP (
-    clave_secreta TEXT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    clave_secreta MEDIUMTEXT
+)

@@ -20,7 +20,6 @@ ALTER TABLE IF EXISTS public."Metodos_MFA"
 DROP TABLE IF EXISTS `Metodos_MFA`;
 
 CREATE TABLE IF NOT EXISTS `Metodos_MFA` (
-    `tipo_metodo` VARCHAR(50) NOT NULL,
-    `id_metodo` BIGINT NOT NULL,
-    PRIMARY KEY (`id_metodo`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+    `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `tipo_metodo` VARCHAR(50) NOT NULL
+)

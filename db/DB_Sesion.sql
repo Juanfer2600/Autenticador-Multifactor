@@ -20,11 +20,9 @@ ALTER TABLE IF EXISTS public."Sesion"
 ------------------------SESIÓN MYSQL-----------------------------------
 
 DROP TABLE IF EXISTS `Sesion`;
-
 CREATE TABLE `Sesion` (
-    `id_sesion` bigint NOT NULL AUTO_INCREMENT,
-    `id_usuario` bigint NOT NULL,
+    `id` int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `id_usuario` int NOT NULL,
     `token_sesion` text NOT NULL,
-    `tiempo_expiracion` date NOT NULL,
-    PRIMARY KEY (`id_sesion`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `tiempo_expiracion` date NOT NULL
+)
