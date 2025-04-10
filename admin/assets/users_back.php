@@ -1,11 +1,11 @@
 <script>
     $(document).ready(function() {
-        var table = $('#user').DataTable({
+        var table = $('#users').DataTable({
             ajax: {
-                url: 'includes/users_crud.php',
+                url: 'assets/includes/users_crud.php',
                 type: 'GET',
                 data: function(d) {
-                    d.action = 'fetch';
+                    d.crud= 'fetch';
                 }
             },
             columns: [{
@@ -30,7 +30,7 @@
             ordering: false,
             stateSave: true,
             language: {
-                url: 'https://cdn.datatables.net/plug-ins/1.10.20/i18n/Spanish.json'
+                url: 'assets/plugins/datatables/language/es.json'
             }
         });
 
@@ -39,27 +39,87 @@
             $('#user_crud').val('create');
             $('#user_modal_label').text('Agregar usuario');
             $('#modal_user').modal('show');
+            $('#metodos_mfa').select2({
+                theme: 'bootstrap4',
+                dropdownParent: $('#modal_user')
+            });
         });
 
-        $('#user').on('click', 'edit', function(){
+        // Fix the edit button selector
+        $('#users').on('click', '.edit', function() {
             var id = $(this).data('id');
             $('#user_form')[0].reset();
             $('#user_crud').val('edit');
             $('#user_id').val(id);
             $('#user_modal_label').text('Editar usuario');
             $.ajax({
-                url: 'includes/users_crud.php',
+                url: 'assets/includes/users_crud.php',
                 type: 'POST',
                 data: {
-                    action: 'get',
+                    crud: 'get',
                     id: id
                 },
                 dataType: 'json',
-                success: function(response){
-                    $('#nombre_usuario').val(response.nombre_usuario);
-                    $('#correo_usuario').val(response.correo_usuario);
-                    $('#password').val(response.password);
+                success: function(response) {
+                    $('#nombre_usuario').val(response.nombre_usuario || '');
+                    $('#correo_usuario').val(response.correo_usuario || '');
+                    $('#password').val(response.password || '');
+                    $('#metodos_mfa').val(response.metodos_mfa.split(', ')).trigger('change');
                     $('#modal_user').modal('show');
+                    $('#metodos_mfa').select2({
+                        theme: 'bootstrap4',
+                        dropdownParent: $('#modal_user')
+                    });
+                },
+                error: function(xhr, status, error) {
+                    console.error('Ajax Error:', xhr.responseText);
+                    Swal.fire('Error', 'Ha ocurrido un error al obtener los datos', 'error');
+                }
+            });
+        });
+
+        $('#users').on('click', '.delete', function() {
+            var id = $(this).data('id');
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: '¡No podrás revertir esto!',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Eliminar',
+                cancelButtonText: 'Cancelar!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        type: 'POST',
+                        url: 'assets/includes/users_crud.php',
+                        data: {
+                            crud: 'delete',
+                            id: id
+                        },
+                        dataType: 'json',
+                        success: function(response) {
+                            Swal.fire(response.message, '', response.status ? 'success' : 'error');
+                            $('#users').DataTable().ajax.reload(null, false);
+                        }
+                    });
+                }
+            });
+        });
+
+        $('#user_form').on('submit', function(e) {
+            e.preventDefault();
+            var formData = new FormData(this);
+            $.ajax({
+                type: 'POST',
+                url: 'assets/includes/users_crud.php',
+                data: formData,
+                contentType: false,
+                processData: false,
+                dataType: 'json',
+                success: function(response) {
+                    $('#modal_user').modal('hide');
+                    Swal.fire(response.message, '', response.status ? 'success' : 'error');
+                    $('#users').DataTable().ajax.reload(null, false);
                 }
             });
         });

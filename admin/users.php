@@ -20,7 +20,7 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <table id="user" class="table table-bordered table-striped table-sm responsive">
+                        <table id="users" class="table table-bordered table-striped table-sm responsive">
                             <thead class="text-center">
                                 <th>ID</th>
                                 <th>Nombre</th>
