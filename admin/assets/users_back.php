@@ -5,7 +5,7 @@
                 url: 'assets/includes/users_crud.php',
                 type: 'GET',
                 data: function(d) {
-                    d.crud= 'fetch';
+                    d.crud = 'fetch';
                 }
             },
             columns: [{
@@ -16,10 +16,16 @@
                     data: 'nombre_usuario'
                 },
                 {
+                    data: 'apellido_usuario'
+                },
+                {
                     data: 'correo_usuario'
                 },
                 {
                     data: 'metodos_mfa'
+                },
+                {
+                    data: 'tipo_usuario'
                 },
                 {
                     data: 'actions',
@@ -41,11 +47,11 @@
             $('#modal_user').modal('show');
             $('#metodos_mfa').select2({
                 theme: 'bootstrap4',
-                dropdownParent: $('#modal_user')
+                dropdownParent: $('#modal_user'),
+                placeholder: 'Selecciona métodos de inicio de sesión'
             });
         });
 
-        // Fix the edit button selector
         $('#users').on('click', '.edit', function() {
             var id = $(this).data('id');
             $('#user_form')[0].reset();
@@ -62,13 +68,16 @@
                 dataType: 'json',
                 success: function(response) {
                     $('#nombre_usuario').val(response.nombre_usuario || '');
+                    $('#apellido_usuario').val(response.apellido_usuario || '');
                     $('#correo_usuario').val(response.correo_usuario || '');
                     $('#password').val(response.password || '');
                     $('#metodos_mfa').val(response.metodos_mfa.split(', ')).trigger('change');
+                    $('#tipo_usuario').val(response.tipo_usuario || '');
                     $('#modal_user').modal('show');
                     $('#metodos_mfa').select2({
                         theme: 'bootstrap4',
-                        dropdownParent: $('#modal_user')
+                        dropdownParent: $('#modal_user'),
+                        placeholder: 'Selecciona métodos de inicio de sesión'
                     });
                 },
                 error: function(xhr, status, error) {

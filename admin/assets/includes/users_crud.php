@@ -6,11 +6,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     switch ($crud) {
         case 'create':
             $nombre_usuario = $conn->real_escape_string($_POST['nombre_usuario']);
+            $apellido_usuario = $conn->real_escape_string($_POST['apellido_usuario']);
             $correo_usuario = $conn->real_escape_string($_POST['correo_usuario']);
             $password = $conn->real_escape_string($_POST['password']);
-            $metodos_mfa = $conn->real_escape_string(implode(', ', $_POST['metodos_mfa']));
+            $metodos_mfa = isset($_POST['metodos_mfa']) && is_array($_POST['metodos_mfa']) ? $conn->real_escape_string(implode(', ', $_POST['metodos_mfa'])) : '';
+            $tipo_usuario = $conn->real_escape_string($_POST['tipo_usuario']);
             $password_hashed = password_hash($password, PASSWORD_DEFAULT);
-            $sql = "INSERT INTO usuario (nombre_usuario, correo_usuario, password, metodos_mfa) VALUES ('$nombre_usuario', '$correo_usuario', '$password_hashed', '$metodos_mfa')";
+            $sql = "INSERT INTO usuario (nombre_usuario, apellido_usuario, correo_usuario, password, metodos_mfa, tipo_usuario) VALUES ('$nombre_usuario', '$apellido_usuario', '$correo_usuario', '$password_hashed', '$metodos_mfa', '$tipo_usuario')";
             if ($conn->query($sql)) {
                 echo json_encode(['status' => true, 'message' => 'Usuario creado exitosamente.']);
             } else {
@@ -20,8 +22,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         case 'edit':
             $id = $conn->real_escape_string($_POST['id']);
-            
-            // Fetch user data first
             $sql_user = "SELECT * FROM usuario WHERE id='$id'";
             $result_user = $conn->query($sql_user);
             if ($result_user->num_rows === 0) {
@@ -29,19 +29,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 exit;
             }
             $urow = $result_user->fetch_assoc();
-            
+
             $nombre_usuario = $conn->real_escape_string($_POST['nombre_usuario']);
+            $apellido_usuario = $conn->real_escape_string($_POST['apellido_usuario']);
             $correo_usuario = $conn->real_escape_string($_POST['correo_usuario']);
             $new_password = $conn->real_escape_string($_POST['password']);
-            $metodos_mfa = $conn->real_escape_string(implode(', ', $_POST['metodos_mfa']));
-            
+            $metodos_mfa = isset($_POST['metodos_mfa']) && is_array($_POST['metodos_mfa']) ? $conn->real_escape_string(implode(', ', $_POST['metodos_mfa'])) : '';
+            $tipo_usuario = $conn->real_escape_string($_POST['tipo_usuario']);
+
             if ($new_password == $urow['password']) {
                 $password_hashed = $urow['password'];
             } else {
                 $password_hashed = password_hash($new_password, PASSWORD_DEFAULT);
             }
 
-            $sql = "UPDATE usuario SET nombre_usuario='$nombre_usuario', correo_usuario='$correo_usuario', password='$password_hashed', metodos_mfa='$metodos_mfa' WHERE id='$id'";
+            $sql = "UPDATE usuario SET nombre_usuario='$nombre_usuario', apellido_usuario='$apellido_usuario', correo_usuario='$correo_usuario', password='$password_hashed', metodos_mfa='$metodos_mfa', tipo_usuario='$tipo_usuario' WHERE id='$id'";
             if ($conn->query($sql)) {
                 echo json_encode(['status' => true, 'message' => 'Usuario actualizado exitosamente.']);
             } else {
@@ -82,8 +84,10 @@ if (isset($_GET['crud']) && $_GET['crud'] === 'fetch') {
         $data[] = [
             'id' => $row['id'],
             'nombre_usuario' => $row['nombre_usuario'],
+            'apellido_usuario' => $row['apellido_usuario'],
             'correo_usuario' => $row['correo_usuario'],
             'metodos_mfa' => $row['metodos_mfa'],
+            'tipo_usuario' => $row['tipo_usuario'],
             'actions' => $actions
         ];
     }
