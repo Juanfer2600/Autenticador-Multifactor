@@ -1,4 +1,7 @@
-<?php include 'assets/header.php'; ?>
+<?php 
+include 'assets/header.php'; 
+include 'assets/conn.php';
+?>
 
 <body>
     <div id="layout-wrapper">
@@ -24,8 +27,10 @@
                             <thead class="text-center">
                                 <th>ID</th>
                                 <th>Nombre</th>
+                                <th>Apellido</th>
                                 <th>Correo</th>
                                 <th>Método de sesión</th>
+                                <th>Tipo de usuario</th>
                                 <th>Acciones</th>
                             </thead>
                             <tbody></tbody>
@@ -57,29 +62,47 @@
                             </div>
                             <div class="col-lg-6">
                                 <div class="form-group">
-                                    <label for="correo_usuario">Correo electrónico</label>
-                                    <input type="text" class="form-control" id="correo_usuario" name="correo_usuario" required>
+                                    <label for="apellido_usuario">Apellido de usuario</label>
+                                    <input type="text" class="form-control" id="apellido_usuario" name="apellido_usuario" required>
                                 </div>
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-lg-6">
                                 <div class="form-group">
-                                    <label for="password">Contraseña</label>
-                                    <input type="password" class="form-control" id="password" name="password" required>
+                                    <label for="correo_usuario">Correo electrónico</label>
+                                    <input type="text" class="form-control" id="correo_usuario" name="correo_usuario" required>
                                 </div>
                             </div>
                             <div class="col-lg-6">
                                 <div class="form-group">
-                                    <label for="metodos_mfa">Métodos MFA</label>
-                                    <select class="form-control" multiple="" id="metodos_mfa" name="metodos_mfa[]" required>
-                                        <option value="">Seleccione un método</option>
-                                        <option value="sms">SMS</option>
-                                        <option value="huella dactilar">huella dactilar</option>
-                                        <option value="reconocimiento facial">reconocimiento facial</option>
-                                    </select>
+                                    <label for="password">Contraseña</label>
+                                    <input type="password" class="form-control" id="password" name="password" required>
                                 </div>
                             </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="metodos_mfa">Métodos MFA</label>
+                            <select class="form-control" multiple="" id="metodos_mfa" name="metodos_mfa[]">
+                                <option value="sms">SMS</option>
+                                <option value="huella dactilar">huella dactilar</option>
+                                <option value="reconocimiento facial">reconocimiento facial</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="tipo_usuario">Tipo de usuario</label>
+                            <select class="form-control" id="tipo_usuario" name="tipo_usuario" required>
+                                <option value="">- Seleccionar -</option>
+                                <?php
+                                $sql = "SELECT * FROM user_type";
+                                $result = $conn->query($sql);
+                                if ($result->num_rows > 0) {
+                                    while ($row = $result->fetch_assoc()) {
+                                        echo '<option value="' . $row['nombre'] . '">' . $row['nombre'] . '</option>';
+                                    }
+                                }
+                                ?>
+                            </select>
                         </div>
                     </div>
                     <div class="modal-footer justify-content-between">

@@ -20,7 +20,9 @@ DROP TABLE IF EXISTS Usuario;
 CREATE TABLE IF NOT EXISTS Usuario (
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     nombre_usuario VARCHAR(50) NOT NULL,
+    apellido_usuario VARCHAR(50) NOT NULL,
     correo_usuario VARCHAR(50) NOT NULL,
-    password VARCHAR(50) NOT NULL,
-    metodos_mfa VARCHAR(50) NOT NULL
+    password VARCHAR(250) NOT NULL,
+    metodos_mfa VARCHAR(250) NULL,
+    tipo_usuario varchar(50) NOT NULL
 )
