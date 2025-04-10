@@ -93,7 +93,7 @@
                         type: 'POST',
                         url: 'assets/includes/users_crud.php',
                         data: {
-                            action: 'delete',
+                            crud: 'delete',
                             id: id
                         },
                         dataType: 'json',

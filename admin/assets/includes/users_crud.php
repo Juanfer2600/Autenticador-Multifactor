@@ -2,12 +2,7 @@
 include_once dirname(__FILE__) . '/../conn.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!isset($_POST['crud'])) {
-        echo json_encode(['status' => false, 'message' => 'Operación no especificada.']);
-        exit;
-    }
     $crud = $_POST['crud'];
-
     switch ($crud) {
         case 'create':
             $nombre_usuario = $conn->real_escape_string($_POST['nombre_usuario']);
