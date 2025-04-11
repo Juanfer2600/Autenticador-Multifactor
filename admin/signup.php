@@ -8,17 +8,6 @@
 
         <div class="auth-page-content">
             <div class="container">
-                <div class="row">
-                    <div class="col-lg-12">
-                        <div class="text-center mt-sm-5 mb-4 text-white-50">
-                            <div>
-                                <a class="d-inline-block auth-logo">
-                                    <img src="assets/images/logo-light.png" alt="" height="20">
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
                 <div class="row justify-content-center">
                     <div class="col-md-8 col-lg-6 col-xl-5">
@@ -37,6 +26,11 @@
                                         <div class="mb-3">
                                             <label for="apellido_usuario" class="form-label">Apellido</label>
                                             <input type="text" class="form-control" id="apellido_usuario" name="apellido_usuario" required>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="correo_usuario" class="form-label">Correo</label>
+                                            <input type="email" class="form-control" id="correo_usuario" name="correo_usuario" required>
                                         </div>
 
                                         <div class="mb-3">
@@ -66,6 +60,59 @@
 
     </div>
     <?php include 'assets/scripts.php'; ?>
+    
+    <script>
+    $(document).ready(function() {
+        $('form').on('submit', function(e) {
+            e.preventDefault();
+            
+            $.ajax({
+                type: "POST",
+                url: "assets/register.php",
+                data: $(this).serialize(),
+                dataType: "json",
+                success: function(response) {
+                    if (response.success) {
+                        Swal.fire({
+                            title: '¡Registro Exitoso!',
+                            text: 'Para completar su registro hacer verificación de dos pasos.',
+                            icon: 'success',
+                            showConfirmButton: false,
+                            timer: 2000,
+                            timerProgressBar: true
+                        }).then(() => {
+                            localStorage.setItem('verification_email', $('#correo_usuario').val());
+                            window.location.href = response.redirect;
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Error',
+                            text: response.message,
+                            icon: 'error',
+                            showConfirmButton: false,
+                            timer: 2000,
+                            timerProgressBar: true
+                        }).then(() => {
+                            if (response.message === 'El correo ya está registrado') {
+                                $('form')[0].reset();
+                            }
+                        });
+                    }
+                },
+                error: function() {
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Ocurrió un error durante el proceso de registro.',
+                        icon: 'error',
+                        showConfirmButton: false,
+                        timer: 2000,
+                        timerProgressBar: true
+                    });
+                }
+            });
+        });
+    });
+    </script>
 
 </body>
 

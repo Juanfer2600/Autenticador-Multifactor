@@ -1,6 +1,34 @@
-<?php include 'assets/header.php'; ?>
+<?php
+include 'assets/header.php';
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Make sure we have the email in session, or set a default value
+$verification_email = $_SESSION['verification_email'] ?? '';
+
+?>
 
 <body>
+    <!-- Debug console output -->
+    <!-- <script>    
+    document.addEventListener('DOMContentLoaded', function() {
+        const emailSpan = document.querySelector('.fw-semibold');
+        if (!emailSpan.textContent.trim()) {
+            const localEmail = localStorage.getItem('verification_email');
+            if (localEmail) {
+                console.log("Using email from localStorage:", localEmail);
+                emailSpan.textContent = localEmail;
+            } else {
+                console.log("No email found in localStorage either");
+            }
+        } else {
+            console.log("Using email from PHP session:", emailSpan.textContent);
+        }
+    });
+    </script> -->
+
     <!-- auth page content -->
     <div class="auth-page-content">
         <div class="container">
@@ -12,7 +40,7 @@
                                 <img src="assets/images/logo-light.png" alt="" height="20">
                             </a>
                         </div>
-                        <p class="mt-3 fs-15 fw-medium">Premium Admin & Dashboard Template</p>
+                        <p class="mt-3 fs-15 fw-medium"></p>
                     </div>
                 </div>
             </div>
@@ -34,7 +62,7 @@
                             <div class="p-2 mt-4">
                                 <div class="text-muted text-center mb-4 mx-lg-3">
                                     <h4>Verify Your Email</h4>
-                                    <p>Please enter the 6 digit code sent to <span class="fw-semibold">example@abc.com</span></p>
+                                    <p>Please enter the 6 digit code sent to <span class="fw-semibold"><?php echo htmlspecialchars($verification_email); ?></span></p>
                                 </div>
 
                                 <form autocomplete="off">
@@ -92,9 +120,9 @@
                     </div>
                     <!-- end card -->
 
-                    <div class="mt-4 text-center">
+                    <!-- <div class="mt-4 text-center">
                         <p class="mb-0">Didn't receive a code ? <a href="auth-pass-reset-basic.html" class="fw-semibold text-primary text-decoration-underline">Resend</a> </p>
-                    </div>
+                    </div> -->
 
                 </div>
             </div>
