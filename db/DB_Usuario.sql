@@ -16,13 +16,14 @@ CREATE TABLE IF NOT EXISTS public."Usuario"
 
 --------------------------------USUARIO MYSQL---------------------------------
 
-DROP TABLE IF EXISTS Usuario;
-CREATE TABLE IF NOT EXISTS Usuario (
-    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    nombre_usuario VARCHAR(50) NOT NULL,
-    apellido_usuario VARCHAR(50) NOT NULL,
-    correo_usuario VARCHAR(50) NOT NULL,
-    password VARCHAR(250) NOT NULL,
-    metodos_mfa VARCHAR(250) NULL,
-    tipo_usuario varchar(50) NOT NULL
+DROP TABLE IF EXISTS `usuario`;
+CREATE TABLE `usuario` (
+  `id` int NOT NULL,
+  `nombre_usuario` varchar(50) NOT NULL,
+  `apellido_usuario` varchar(50) NOT NULL,
+  `correo_usuario` varchar(50) NOT NULL,
+  `password` varchar(250) NOT NULL,
+  `metodos_mfa` varchar(250) DEFAULT NULL,
+  `tipo_usuario` varchar(50) NOT NULL,
+  `status` int DEFAULT '1'
 )
