@@ -1,5 +1,5 @@
 <?php
-include_once dirname(__FILE__) . '/../conn.php';
+include '../session.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $crud = $_POST['crud'];

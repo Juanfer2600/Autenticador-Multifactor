@@ -1,5 +1,5 @@
 <?php
-include_once dirname(__FILE__) . '/../conn.php';
+include '../session.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $crud = $_POST['crud'];
@@ -75,19 +75,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 if (isset($_GET['crud']) && $_GET['crud'] === 'fetch') {
-    $sql = "SELECT * FROM usuario";
+    $sql = "SELECT * FROM usuario WHERE status = 1";
     $result = $conn->query($sql);
     $data = [];
     while ($row = $result->fetch_assoc()) {
-        $actions = '<button class="btn btn-sm btn-primary edit" data-id="' . $row['id'] . '"><i class="bx bx-edit"></i></button> ';
-        $actions .= '<button class="btn btn-sm btn-danger delete" data-id="' . $row['id'] . '"><i class="bx bx-trash"></i></button>';
+        $sql = "SELECT nombre FROM user_type WHERE id='" . $row['tipo_usuario'] . "'";
+        $result_type = $conn->query($sql);
+        $row_type = $result_type->fetch_assoc();
+        $tipo = $row_type['nombre'];
+
+        $actions = '<button class="btn btn-sm btn-primary edit" data-id="' . $row['id'] . '"><i class="bx bx-edit"></i></button>
+                    <button class="btn btn-sm btn-danger delete" data-id="' . $row['id'] . '"><i class="bx bx-trash"></i></button>';
+
         $data[] = [
             'id' => $row['id'],
             'nombre_usuario' => $row['nombre_usuario'],
             'apellido_usuario' => $row['apellido_usuario'],
             'correo_usuario' => $row['correo_usuario'],
             'metodos_mfa' => $row['metodos_mfa'],
-            'tipo_usuario' => $row['tipo_usuario'],
+            'tipo_usuario' => $tipo,
             'actions' => $actions
         ];
     }

@@ -1,4 +1,7 @@
-<?php include 'assets/header.php'; ?>
+<?php 
+include 'assets/header.php'; 
+include 'assets/session.php';
+?>
 
 <body>
     <div id="layout-wrapper">
