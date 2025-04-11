@@ -38,28 +38,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $metodos_mfa = 'sms';
         $tipo_usuario = '2';
 
-        $sql = "INSERT INTO Usuario (nombre_usuario, apellido_usuario, correo_usuario, password, metodos_mfa, tipo_usuario) VALUES (?, ?, ?, ?, ?, ?)";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("ssssss", $nombre_usuario, $apellido_usuario, $correo_usuario, $password_hash, $metodos_mfa, $tipo_usuario);
-        if ($stmt->execute()) {
-            if (session_status() === PHP_SESSION_NONE) {
-                session_start();
-            }
-
-            $_SESSION['verification_email'] = $correo_usuario;
-
-            echo json_encode([
-                'success' => true,
-                'message' => 'Para completar su registro hacer verificación de dos pasos.',
-                'redirect' => 'two-step.php'
-            ]);
-            exit();
-        } else {
-            echo json_encode([
-                'success' => false,
-                'message' => 'Error al registrar el usuario. Inténtalo de nuevo.'
-            ]);
-            exit();
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
         }
+
+        // Store user data in session for use after verification
+        $_SESSION['temp_user_data'] = [
+            'nombre_usuario' => $nombre_usuario,
+            'apellido_usuario' => $apellido_usuario,
+            'correo_usuario' => $correo_usuario,
+            'password_hash' => $password_hash,
+            'metodos_mfa' => $metodos_mfa,
+            'tipo_usuario' => $tipo_usuario
+        ];
+
+        $_SESSION['verification_email'] = $correo_usuario;
+
+        echo json_encode([
+            'success' => true,
+            'message' => 'Para completar su registro hacer verificación de dos pasos.',
+            'redirect' => 'two-step.php'
+        ]);
+        exit();
     }
 }

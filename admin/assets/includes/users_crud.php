@@ -75,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 if (isset($_GET['crud']) && $_GET['crud'] === 'fetch') {
-    $sql = "SELECT * FROM usuario";
+    $sql = "SELECT * FROM usuario WHERE status = 1";
     $result = $conn->query($sql);
     $data = [];
     while ($row = $result->fetch_assoc()) {
