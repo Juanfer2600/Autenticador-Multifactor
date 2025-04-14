@@ -18,12 +18,13 @@ CREATE TABLE IF NOT EXISTS public."Usuario"
 
 DROP TABLE IF EXISTS `usuario`;
 CREATE TABLE `usuario` (
-  `id` int NOT NULL,
+  `id` int NOT NULL AUTO_INCREMENT,
   `nombre_usuario` varchar(50) NOT NULL,
   `apellido_usuario` varchar(50) NOT NULL,
   `correo_usuario` varchar(50) NOT NULL,
   `password` varchar(250) NOT NULL,
   `metodos_mfa` varchar(250) DEFAULT NULL,
   `tipo_usuario` varchar(50) NOT NULL,
-  `status` int DEFAULT '1'
+  `status` int DEFAULT '1',
+  PRIMARY KEY (`id`)
 )
