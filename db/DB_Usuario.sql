@@ -26,5 +26,6 @@ CREATE TABLE `usuario` (
   `metodos_mfa` varchar(250) DEFAULT NULL,
   `tipo_usuario` varchar(50) NOT NULL,
   `status` int DEFAULT '1',
+  `last_login` varchar(40) NULL,
   PRIMARY KEY (`id`)
 )
