@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $correo_usuario = $conn->real_escape_string($correo_usuario);
         $password = $conn->real_escape_string($password);
         $password_hash = password_hash($password, PASSWORD_DEFAULT);
-        $metodos_mfa = 'sms';
+        $metodos_mfa = 'Token OTP';
         $tipo_usuario = '2';
 
         if (session_status() === PHP_SESSION_NONE) {
