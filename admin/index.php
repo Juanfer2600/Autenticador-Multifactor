@@ -1,7 +1,6 @@
 <?php
 // Verificar si existe el archivo .env, si no, redirigir al inicializador
-if (!file_exists(__DIR__ . '/../.env'))
-{
+if (!file_exists(__DIR__ . '/../.env')) {
   header('location:../init.php');
   exit();
 }
@@ -9,8 +8,7 @@ if (!file_exists(__DIR__ . '/../.env'))
 require_once 'includes/session_config.php';
 require_once 'includes/security_functions.php';
 
-if (isset($_SESSION['admin']))
-{
+if (isset($_SESSION['admin'])) {
   header('location:home.php');
   exit();
 }
@@ -53,7 +51,7 @@ $csrf_token = generateCSRFToken();
 
               <div class="text-center w-75 m-auto">
                 <h4 class="text-dark-50 text-center pb-0 fw-bold">Inicia Sesión</h4>
-                <p class="text-muted mb-4">Ingresa tu usuario y contraseña para accederder al sistema</p>
+                <p class="text-muted mb-4">Ingresa tu usuario y contraseña para acceder al sistema</p>
               </div>
 
               <form action="login.php" method="post" class="needs-validation" novalidate id="loginForm">
@@ -118,7 +116,9 @@ $csrf_token = generateCSRFToken();
                 </script>
 
               </form>
+              <p class="text-black-50 text-center">¿No tienes cuenta? <a href="signup.php" class="fw-medium text-primary"> Regístrate</a> </p>
             </div>
+
           </div>
           <!-- end card -->
           <!-- end row -->
@@ -135,7 +135,7 @@ $csrf_token = generateCSRFToken();
     <span>
       <script>
         document.write(new Date().getFullYear())
-      </script> - Core
+      </script> - MFA
     </span>
   </footer>
   <script src="../dist/js/vendor.min.js"></script>

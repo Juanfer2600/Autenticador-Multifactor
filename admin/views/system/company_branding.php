@@ -49,7 +49,7 @@ if (!in_array(1, $roles_ids)) {
                                         </div>
                                     </div>
                                     <div class="col-lg-6 text-center">
-                                        <div class="bg-primary p-2 ">
+                                        <div class="p-2 ">
                                             <img src=" ../images/logo2.png" alt="Logo Blanco" class="brand-image" width="88.5px">
                                         </div>
                                     </div>
@@ -65,7 +65,7 @@ if (!in_array(1, $roles_ids)) {
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="bg-primary col-lg-6 text-center">
+                                    <div class="col-lg-6 text-center">
                                         <img src="../images/logo_circulo.png" alt="Logo3" width="80px">
                                     </div>
                                 </div>
@@ -81,7 +81,7 @@ if (!in_array(1, $roles_ids)) {
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="bg-primary col-lg-6 text-center">
+                                    <div class="col-lg-6 text-center">
                                         <img src="../images/favicon.png" alt="Favicon" width="80px">
                                     </div>
                                 </div>
