@@ -123,6 +123,20 @@ $csrf_token = generateCSRFToken();
           <!-- end card -->
           <!-- end row -->
 
+          <!-- colocar iconos para otros inicios de sesión -->
+          <div class="mt-4 text-center">
+            <p class="text-muted mb-0">Inicia sesión con</p>
+            <ul class="list-inline mt-2 mb-0">
+              <li class="list-inline-item">
+                <a href="#"><i class="fa-solid fa-duotone fa-qrcode fa-2x"></i></a>
+              </li>
+
+                <li class="list-inline-item">
+                <a href="#"><i class="fa-solid fa-duotone fa-face-viewfinder fa-2x"></i></a>
+                </li>
+            </ul>
+          </div>
+
         </div> <!-- end col -->
       </div>
       <!-- end row -->
