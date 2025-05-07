@@ -1,13 +1,12 @@
 const mysql = require('mysql2/promise');
-const dotenv = require('dotenv');
-dotenv.config();
+require('dotenv').config({ path: 'C:/Laragon/www/Autenticador-Multifactor/.env' }); // Necesito cambiar la ruta para evitar problemas de compatibilidad entre sistemas operativos
 
 const pool = mysql.createPool({
-  host: process.env.DB_HOST, // 'localhost'
-  user: process.env.DB_USER, // 'root'
-  password: process.env.DB_PASSWORD, // ''
-  database: process.env.DB_NAME, // 'mfa'
-  port: process.env.DB_PORT || 3306
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    port: process.env.DB_PORT || 3306
 });
 
 module.exports = pool;

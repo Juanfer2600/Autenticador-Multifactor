@@ -66,8 +66,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $metodos_mfa = $temp_user_data['metodos_mfa'];
             $tipo_usuario = $temp_user_data['tipo_usuario'];
             
-            // Corrected SQL query - include status=1 in the VALUES directly
+            // Modified SQL query to exclude the id field, assuming it's auto-incremented in the database
             $sql = "INSERT INTO Usuario (nombre_usuario, apellido_usuario, correo_usuario, password, metodos_mfa, tipo_usuario, status) VALUES (?, ?, ?, ?, ?, ?, 1)";
+            
+            // If the id field is not auto-incremented, you'd need to generate an ID and include it:
+            // $sql = "INSERT INTO Usuario (id, nombre_usuario, apellido_usuario, correo_usuario, password, metodos_mfa, tipo_usuario, status) VALUES (?, ?, ?, ?, ?, ?, ?, 1)";
+            // $id = generate_unique_id(); // You would need to implement this function
+            // $stmt->bind_param("isssssss", $id, $nombre_usuario, $apellido_usuario, $correo_usuario, $password_hash, $metodos_mfa, $tipo_usuario);
+            
             $stmt = $conn->prepare($sql);
             $stmt->bind_param("ssssss", $nombre_usuario, $apellido_usuario, $correo_usuario, $password_hash, $metodos_mfa, $tipo_usuario);
             

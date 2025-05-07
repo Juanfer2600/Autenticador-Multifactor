@@ -1,0 +1,129 @@
+-------------------------Cambios-------------------------------------
+
+Cambio de endpoint para el register, paso del "api/usuario > api/register"
+ ------------------(IMPORTANTE CAMBIALO EN EL FRONT, YA NO ES USUARIO SINO REGISTER)---------------------
+
+ELIMINE LA COLUMNA LOGIN_ATTEMPTS PQ LA PUSE EN LA TABLA DE USUARIOS (Hola te habla el carlo de horas después, no supe como verga hacer que se incrementara pq no me daba
+asi que ahora ya no existe esa columna de ningún lado jiji) (Se debe de implementar de algún modo que cuando ya no se pueda iniciar sesión que se quite el botón de login)
+
+ELIMINE LA COLUMNA METODOS_MFA DE USUARIOS (aunque estoy viendo si la implemento pero ya ni me acuerdo el pq, pero bueno ahi dejalo)
+
+
+-------------------------Cambios-------------------------------------
+
+
+
+
+
+
+
+-------------------------Implementaciones-----------------------------
+
+Metodo QR agregado
+Implementaciones de seguridad y robusticidad
+
+
+-------------------------Implementaciones-----------------------------
+
+
+
+
+
+
+
+-------------------------Cambios que se deben de hacer al proyecto-----------------------------
+
+
+Cuando el usuario le de a cerrar sesión o cierre la app, se debe de enviar un update a la BD que actualice la columna "status" en "usuarios", activo | desactivado hajsdjhajsdadsa, noescierto es desconectado o algo asi 
+
+
+Opción para que el usuario active el método "QR", cuando le de a esa opción tenes que llamar a api/qr, el usuario guarda el código OTP en alguna app que tenga o la app de passwords por default del teléfono, y cuando hace el login, abajo debe de haber una opción que sea solo ingresar con ese código
+
+
+Cambiar las ruta en db.js para evitar problemas de compatibilidad
+
+
+El endpoint regenerate no funciona
+El endpoint disable no funciona
+El endpoint de login_qr no funciona, no agarra la clave OTP
+
+
+Implementar un middleware para autenticar la solicitud get del endpoint api/users (Para que no cualquiera pueda listar los usuarios pero bueno x ya no quiero seguir en este proyecto ayuda)
+
+
+
+-------------------------Cambios que se deben de hacer al proyecto-----------------------------
+
+
+
+
+
+--------Flujo para el usuario-----------
+
+
+
+
+{
+    En el register ingresa sus datos (No se genera el mfa_secret, sino hasta que el usuario lo decida en las configuraciones de su cuenta, llamando a api/qr)
+}
+
+
+{
+    En el login ingresa sus datos y se genera el token JWT (Token importante para luego hay que guardarlo en algun lado) (Endpoint api/login)
+
+    El servidor envia el token JWT al usuario y se guarda en una cookie
+
+    Cuando el usuario realiza una acción que requiere autenticación (por ejemplo, cuando se quiere hacer un cambio en su cuenta y se pide la contraseña)
+    En el front debes incluir el token JWT en la solicitud que se envía al backend.
+
+    (Tenes que buscar como incluir ese JWT al header JHDSA o preguntale a nuestro tercer integrante del grupo, chatgpt)
+}
+
+
+{
+    -----Opcion para activar el MFA del QR-------
+                --------api/qr--------
+    En <Headers> se debe de poner un nuevo header llamado "Authorization", en el "Value", se debe de poner: "Bearer eyJhbGciO"
+    (Es el token JWT que se supone que se debe enviar desde el front, mira la linea 57 pa mas info)
+
+    Se genera un codigo en base64 que es el QR (https://base64.guru/converter/decode/image)
+    Con la camara del telefono o alguna app de autenticación se genera la clave OTP
+
+    Cuando quiera volver a iniciar sesion debe de haber iconos con el logo de un QR donde pueda poner el codigo (api/login_qr)
+}
+
+
+{
+    -----Opcion para activar el MFA de la Huella Dactilar-------
+                --------api/--------
+
+}
+
+{
+    -----Opcion para activar el MFA del Face ID-------
+                --------api/--------
+
+}
+
+
+
+
+
+
+
+
+--------Flujo para el usuario-----------
+
+
+
+
+
+-------------------Notas Adicionales-------------------
+
+
+1. Como hiciste lo del correo mi pana, se supone que ese era mi trabajo xd
+
+2. Se que suena a que no hice nada ahorita pero mañana voy a ver como hago el de la huella o face id, en cualquiera de los dos se me hace dificil
+    porque ni tengo camara ni tengo una huella cibernetica para conectarme simbioticamente a la matriz de mi computadora sexy y ponerle mi huella en su boca c:<
+
+-------------------Notas Adicionales-------------------

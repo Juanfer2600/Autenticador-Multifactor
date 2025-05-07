@@ -84,7 +84,7 @@ include 'assets/session.php';
                         <div class="form-group">
                             <label for="metodos_mfa">Métodos MFA</label>
                             <select class="form-control" multiple="" id="metodos_mfa" name="metodos_mfa[]">
-                                <option value="sms">SMS</option>
+                                <option value="Token OTP">Token OTP</option>
                                 <option value="huella dactilar">huella dactilar</option>
                                 <option value="reconocimiento facial">reconocimiento facial</option>
                             </select>
