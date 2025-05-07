@@ -1,3 +1,6 @@
 <?php
 
-header('Location: admin/index.php');
+//redigirig a /admin
+
+header("Location: /admin");
+exit();
