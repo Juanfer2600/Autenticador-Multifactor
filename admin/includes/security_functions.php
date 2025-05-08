@@ -2,13 +2,27 @@
 include 'functions/mail_functions.php';
 date_default_timezone_set('America/Guatemala');
 
-function generateCSRFToken()
-{
-    if (!isset($_SESSION['csrf_token']))
-    {
+/**
+ * Genera un token CSRF y lo almacena en la sesión
+ * @return string El token CSRF generado
+ */
+function generateCSRFToken() {
+    if (!isset($_SESSION['csrf_token'])) {
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
     }
     return $_SESSION['csrf_token'];
+}
+
+/**
+ * Valida un token CSRF comparándolo con el almacenado en la sesión
+ * @param string $token El token CSRF a validar
+ * @return bool True si el token es válido, false en caso contrario
+ */
+function validateCSRFToken($token) {
+    if (!isset($_SESSION['csrf_token']) || $token !== $_SESSION['csrf_token']) {
+        return false;
+    }
+    return true;
 }
 
 function checkLoginAttempts($username)

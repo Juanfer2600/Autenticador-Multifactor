@@ -44,6 +44,7 @@ $apellido = trim($_POST['apellido_usuario']);
 $correo = trim($_POST['correo_usuario']);
 $password = $_POST['password'];
 $confirm_password = $_POST['confirm_password'];
+$gender = isset($_POST['gender']) ? trim($_POST['gender']) : '0'; // 0 para Masculino (default), 1 para Femenino
 
 // Validar formato de correo electrónico
 if (!filter_var($correo, FILTER_VALIDATE_EMAIL)) {
@@ -68,7 +69,7 @@ if ($password !== $confirm_password) {
 
 try {
     // Verificar si el correo ya existe
-    $stmt = $conn->prepare("SELECT id_usuario FROM usuario WHERE correo_usuario = :correo");
+    $stmt = $conn->prepare("SELECT id FROM admin WHERE username = :correo");
     $stmt->bindParam(':correo', $correo);
     $stmt->execute();
     
@@ -84,60 +85,51 @@ try {
     // Hashear la contraseña
     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
     
-    // Insertar el nuevo usuario en la base de datos
-    $stmt = $conn->prepare("INSERT INTO usuario (nombre_usuario, apellido_usuario, correo_usuario, password_usuario, fecha_registro, estado_usuario) 
-                           VALUES (:nombre, :apellido, :correo, :password, NOW(), 1)");
+    // Insertar el nuevo usuario en la tabla admin
+    $stmt = $conn->prepare("INSERT INTO admin (username, password, user_firstname, user_lastname, photo, created_on, admin_gender, admin_estado) 
+                           VALUES (:correo, :password, :nombre, :apellido, '', NOW(), :gender, 0)");
     
     $stmt->bindParam(':nombre', $nombre);
     $stmt->bindParam(':apellido', $apellido);
     $stmt->bindParam(':correo', $correo);
     $stmt->bindParam(':password', $hashed_password);
+    $stmt->bindParam(':gender', $gender);
     $stmt->execute();
     
     // Obtener el ID del usuario recién insertado
     $user_id = $conn->lastInsertId();
     
-    // Asignar rol de usuario por defecto (asumiendo que existe una tabla de roles y un rol por defecto)
-    $stmt = $conn->prepare("INSERT INTO usuario_rol (id_usuario, id_rol) VALUES (:id_usuario, 2)"); // 2 = rol usuario normal
+    // Asignar rol de usuario por defecto
+    $default_role = "2"; // Rol usuario normal
+    $stmt = $conn->prepare("UPDATE admin SET roles_ids = :roles_ids WHERE id = :id_usuario");
+    $stmt->bindParam(':roles_ids', $default_role);
     $stmt->bindParam(':id_usuario', $user_id);
     $stmt->execute();
     
-    // Generar token para verificación de dos pasos
-    $verification_code = generateRandomCode(6, 'numeric'); // Genera un código de 6 dígitos
-    $token_expires = date('Y-m-d H:i:s', strtotime('+15 minutes')); // El token expira en 15 minutos
+    // Usar el ID de sesión de PHP como token
+    $session_token = session_id();
+    $token_expires = date('Y-m-d', strtotime('+7 days')); // La cookie expira en 7 días
     
-    // Almacenar el token en la base de datos
-    $stmt = $conn->prepare("INSERT INTO token_otp (id_usuario, token, fecha_expiracion, estado_token) 
-                           VALUES (:id_usuario, :token, :fecha_expiracion, 1)");
+    // Almacenar el token de sesión en la tabla sesion
+    $stmt = $conn->prepare("INSERT INTO sesion (id_usuario, token_sesion, tiempo_expiracion) 
+                           VALUES (:id_usuario, :token_sesion, :tiempo_expiracion)");
     
     $stmt->bindParam(':id_usuario', $user_id);
-    $stmt->bindParam(':token', $verification_code);
-    $stmt->bindParam(':fecha_expiracion', $token_expires);
+    $stmt->bindParam(':token_sesion', $session_token);
+    $stmt->bindParam(':tiempo_expiracion', $token_expires);
     $stmt->execute();
     
-    // Enviar correo con código de verificación
-    $to = $correo;
-    $subject = "Código de Verificación - Sistema MFA";
-    $message = "Hola $nombre $apellido,\n\n";
-    $message .= "Tu código de verificación es: $verification_code\n\n";
-    $message .= "Este código expirará en 15 minutos.\n\n";
-    $message .= "Si no solicitaste este código, por favor ignora este mensaje.\n\n";
-    $message .= "Saludos,\nEquipo de Sistema MFA";
-    
-    // Registrar los datos de verificación en la sesión
+    // Registrar los datos del usuario en la sesión
     $_SESSION['verification_email'] = $correo;
     $_SESSION['verification_user_id'] = $user_id;
-    
-    // Aquí iría el código para enviar el correo utilizando la librería que uses (PHPMailer, mail() nativo, etc.)
-    // Por ahora, simularemos que el correo se envió correctamente
     
     // Confirmar la transacción
     $conn->commit();
     
     // Respuesta exitosa
     $response['success'] = true;
-    $response['message'] = 'Registro exitoso. Por favor completa la verificación de dos pasos.';
-    $response['redirect'] = 'verify-code.php'; // Redireccionar a la página de verificación
+    $response['message'] = 'Registro exitoso. Por favor inicia sesión.';
+    $response['redirect'] = 'index.php';
     
 } catch (PDOException $e) {
     // Revertir la transacción en caso de error
