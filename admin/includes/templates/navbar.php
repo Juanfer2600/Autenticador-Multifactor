@@ -20,10 +20,47 @@ echo "<nav class='main-header navbar navbar-expand $navbarClass'>";
   </li>
 </ul>
 
+<?php
+// Check if OTP token is configured in user's MFA methods
+$hasOTP = false;
+$notificationCount = 0;
+$notificationClass = "danger"; // Default to danger (red) for security issues
+$notificationMessage = "Favor verificar tu cuenta";
+$notificationLink = dirname($_SERVER['PHP_SELF']) . "/two-step.php";
+$notificationIcon = "fas fa-shield-alt";
+$notificationTime = "Ahora";
 
+if (isset($user['metodos_mfa']) && !empty($user['metodos_mfa'])) {
+  if (strpos($user['metodos_mfa'], 'Token OTP') !== false) {
+    $hasOTP = true;
+    $notificationClass = "success";
+    $notificationMessage = "Verificación de dos pasos configurada";
+    $notificationIcon = "fas fa-check-circle";
+  }
+}
+
+// Set notification count if OTP is not configured
+if (!$hasOTP) {
+  $notificationCount = 1;
+}
+?>
 
 <!-- Right navbar links -->
-<ul class="navbar-nav ml-auto">
+<ul class="navbar-nav ml-auto">  <?php if (!$hasOTP): ?>
+  <!-- 2FA configuration button for users without OTP -->
+  <li class="nav-item">
+    <a href="<?php echo dirname($_SERVER['PHP_SELF']); ?>/two-step.php" class="nav-link text-danger">
+      <i class="fas fa-shield-alt"></i> Configurar 2FA
+    </a>
+  </li>
+  <?php else: ?>
+  <!-- Verified account indicator for users with OTP -->
+  <li class="nav-item">
+    <span class="nav-link text-success">
+      <i class="fas fa-check-circle"></i> Cuenta verificada
+    </span>
+  </li>
+  <?php endif; ?>
   <li class="nav-item dropdown user-menu">
     <a class="nav-link dropdown-toggle" data-toggle="dropdown">
       <img src="<?php echo $photoSrc; ?>" class="user-image img-circle" alt="User Image">
