@@ -1,5 +1,8 @@
 <?php
-include 'assets/session.php';
+// Se requiere este archivo para la conexión a la base de datos
+require_once 'includes/session_config.php';
+require_once 'includes/security_functions.php';
+require_once '../config/db_conn.php'; // Make sure database connection is included
 
 header('Content-Type: application/json');
 
@@ -11,87 +14,70 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $submitted_code = $_POST['code'] ?? '';
     $stored_code = $_SESSION['verification_code'] ?? '';
     $verification_email = $_SESSION['verification_email'] ?? '';
+    $admin_id = $_SESSION['admin'] ?? null; // Obtener ID del admin de la sesión actual
     
     // Check if the code matches
     if ($submitted_code === $stored_code) {
-        // Retrieve user data from session or temporary storage
-        $temp_user_data = $_SESSION['temp_user_data'] ?? null;
-        
-        if (!$temp_user_data) {
-            // Try to get the user data from the database as this might be a re-verification
-            $stmt = $conn->prepare("SELECT * FROM Usuario WHERE correo_usuario = ? AND status = 0");
-            $stmt->bind_param("s", $verification_email);
-            $stmt->execute();
-            $result = $stmt->get_result();
+        // Verificar si hay una sesión activa de admin
+        if ($admin_id) {
+            // Actualizar el campo metodos_mfa del admin autenticado
+            $update_stmt = $conn->prepare("UPDATE admin SET metodos_mfa = 'Token OTP' WHERE id = ?");
+            $result = $update_stmt->execute([$admin_id]);
             
-            if ($result->num_rows > 0) {
-                // User exists but needs verification
-                $row = $result->fetch_assoc();
-                $user_id = $row['id_usuario'];
+            if ($result) {
+                // Limpiar datos de verificación de la sesión
+                unset($_SESSION['verification_code']);
+                unset($_SESSION['verification_email']);
                 
-                // Update user status to active (1)
-                $update_stmt = $conn->prepare("UPDATE Usuario SET status = 1 WHERE id_usuario = ?");
-                $update_stmt->bind_param("i", $user_id);
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Método MFA configurado correctamente.',
+                    'redirect' => 'home.php'
+                ]);
+                exit();
+            } else {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Error al actualizar el método MFA. Por favor intente nuevamente.'
+                ]);
+                exit();
+            }
+        } else {
+            // Si no hay una sesión activa, verificar si existe el usuario por email
+            $stmt = $conn->prepare("SELECT * FROM admin WHERE username = ? AND admin_estado = 0");
+            $stmt->execute([$verification_email]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if ($row) {
+                // Admin existe pero necesita verificación
+                $admin_id = $row['id'];
                 
-                if ($update_stmt->execute()) {
-                    // Clear verification session data
+                // Actualizar estado del admin a activo (1) y configurar el método MFA
+                $update_stmt = $conn->prepare("UPDATE admin SET metodos_mfa = 'Token OTP' WHERE id = ?");
+                $result = $update_stmt->execute([$admin_id]);
+                
+                if ($result) {
+                    // Limpiar datos de verificación de la sesión
                     unset($_SESSION['verification_code']);
                     unset($_SESSION['verification_email']);
                     
                     echo json_encode([
                         'success' => true,
-                        'message' => 'Email verified successfully. Your account is now active.'
+                        'message' => 'Email verificado correctamente. Su cuenta ahora está activa y el método MFA ha sido configurado.',
+                        'redirect' => 'login.php'
                     ]);
                     exit();
                 } else {
                     echo json_encode([
                         'success' => false,
-                        'message' => 'Failed to activate your account. Please try again.'
+                        'message' => 'Error al activar su cuenta. Por favor intente nuevamente.'
                     ]);
                     exit();
                 }
             } else {
                 echo json_encode([
                     'success' => false,
-                    'message' => 'User information not found. Please register again.'
-                ]);
-                exit();
-            }
-        } else {
-            // Complete the registration with the stored user data
-            $nombre_usuario = $temp_user_data['nombre_usuario'];
-            $apellido_usuario = $temp_user_data['apellido_usuario'];
-            $correo_usuario = $temp_user_data['correo_usuario'];
-            $password_hash = $temp_user_data['password_hash'];
-            $metodos_mfa = $temp_user_data['metodos_mfa'];
-            $tipo_usuario = $temp_user_data['tipo_usuario'];
-            
-            // Modified SQL query to exclude the id field, assuming it's auto-incremented in the database
-            $sql = "INSERT INTO Usuario (nombre_usuario, apellido_usuario, correo_usuario, password, metodos_mfa, tipo_usuario, status) VALUES (?, ?, ?, ?, ?, ?, 1)";
-            
-            // If the id field is not auto-incremented, you'd need to generate an ID and include it:
-            // $sql = "INSERT INTO Usuario (id, nombre_usuario, apellido_usuario, correo_usuario, password, metodos_mfa, tipo_usuario, status) VALUES (?, ?, ?, ?, ?, ?, ?, 1)";
-            // $id = generate_unique_id(); // You would need to implement this function
-            // $stmt->bind_param("isssssss", $id, $nombre_usuario, $apellido_usuario, $correo_usuario, $password_hash, $metodos_mfa, $tipo_usuario);
-            
-            $stmt = $conn->prepare($sql);
-            $stmt->bind_param("ssssss", $nombre_usuario, $apellido_usuario, $correo_usuario, $password_hash, $metodos_mfa, $tipo_usuario);
-            
-            if ($stmt->execute()) {
-                // Clear verification session data
-                unset($_SESSION['verification_code']);
-                unset($_SESSION['verification_email']);
-                unset($_SESSION['temp_user_data']);
-                
-                echo json_encode([
-                    'success' => true,
-                    'message' => 'Registration successful! You can now login.'
-                ]);
-                exit();
-            } else {
-                echo json_encode([
-                    'success' => false,
-                    'message' => 'Failed to complete registration. Error: ' . $conn->error
+                    'message' => 'No se encontró información del usuario. Por favor regístrese nuevamente.'
                 ]);
                 exit();
             }
@@ -99,14 +85,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         echo json_encode([
             'success' => false,
-            'message' => 'Incorrect verification code. Please try again.'
+            'message' => 'Código de verificación incorrecto. Por favor intente nuevamente.'
         ]);
         exit();
     }
 } else {
     echo json_encode([
         'success' => false,
-        'message' => 'Invalid request method.'
+        'message' => 'Método de solicitud inválido.'
     ]);
     exit();
 }

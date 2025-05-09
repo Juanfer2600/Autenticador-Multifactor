@@ -1,9 +1,35 @@
 <?php
-include 'assets/header.php';
-include 'enviar_correo.php';
+require_once 'includes/session_config.php';
+require_once 'includes/security_functions.php';
+require_once 'includes/functions/mail_functions.php'; // Replace include 'enviar_correo.php' with this line
+require_once '../config/db_conn.php'; // Make sure database connection is included
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
+if (isset($_SESSION['admin'])) {
+    // Verificar si el admin tiene configurado un método MFA
+    $admin_id = $_SESSION['admin'];    $stmt = $conn->prepare("SELECT metodos_mfa FROM admin WHERE id = ?");
+    $stmt->execute([$admin_id]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    if ($row) {
+        if (!empty($row['metodos_mfa'])) {
+            // Si ya tiene método MFA configurado, redirigir a home
+            header('location:home.php');
+            exit();
+        }
+        // Si no tiene método MFA configurado, continuar en esta página para configurarlo
+    } else {
+        // Si no se encuentra el admin, cerrar la sesión
+        session_unset();
+        session_destroy();
+        header('location:login.php');
+        exit();
+    }
+}
+
+// Verificar si existe el archivo .env, si no, redirigir al inicializador
+if (!file_exists(__DIR__ . '/../.env')) {
+    header('location:../init.php');
+    exit();
 }
 
 // Debug variables
@@ -11,7 +37,20 @@ $email_status = '';
 $debug_info = [];
 $verification_code = '';
 
-// Make sure we have the email in session, or set a default value
+// Make sure we have the email in session, or get it from the logged-in user
+if (!isset($_SESSION['verification_email']) || empty($_SESSION['verification_email'])) {
+    // Si estamos logueados, usar el correo del admin
+    if (isset($_SESSION['admin'])) {
+        $admin_id = $_SESSION['admin'];
+        // Consultar el correo electrónico del admin desde la base de datos
+        $stmt = $conn->prepare("SELECT username FROM admin WHERE id = ?");
+        $stmt->execute([$admin_id]);
+        
+        if ($stmt && $row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $_SESSION['verification_email'] = $row['username']; // This is correct as per your schema
+        }
+    }
+}
 $verification_email = $_SESSION['verification_email'] ?? '';
 
 // Check if resend was requested
@@ -22,19 +61,19 @@ if (isset($_GET['resend']) && $_GET['resend'] == 'true') {
 
 // Only send the email if it hasn't been sent yet or resend was requested
 if (!isset($_SESSION['verification_code']) || empty($_SESSION['verification_code'])) {
-    if (!empty($verification_email)) {
-        $destinatarios = [$verification_email];
+    if (!empty($verification_email)) {        $destinatarios = [$verification_email];
         $asunto = "Verificación de correo electrónico";
         $codigo_verificacion = '';
         for ($i = 0; $i < 6; $i++) {
             $codigo_verificacion .= rand(1, 9);
         }
         $cuerpo = "Por favor, ingresa el siguiente código de verificación: <strong>$codigo_verificacion</strong>";
+        $archivosAdjuntos = []; // Parámetro requerido por la función
 
         // Try to send the email
         try {
-            // Fix the order of parameters: destinatarios, asunto, cuerpo
-            $send_result = enviarCorreo($destinatarios, $asunto, $cuerpo);
+            // Corregir el orden de los parámetros según la definición de la función
+            $send_result = enviarCorreo($asunto, $cuerpo, $destinatarios, $archivosAdjuntos);
             
             if ($send_result) {
                 $email_status = "Correo enviado exitosamente";
@@ -75,11 +114,31 @@ if (!isset($_SESSION['verification_code']) || empty($_SESSION['verification_code
     ];
 }
 
+$csrf_token = generateCSRFToken();
 // Disable debugging for production - setting to false hides the debug panel
 $show_debug = false;
 ?>
 
-<body>
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Verificación de Correo Electrónico</title>
+    <link rel="icon" href="../images/favicon.png">
+    <link rel="stylesheet" href="../plugins/sweetalert2/sweetalert2.css">
+    <script src="../dist/js/config.js"></script>
+    <link href="../dist/css/app.css" rel="stylesheet" type="text/css" id="app-style" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://site-assets.fontawesome.com/releases/v6.5.1/css/all.css">
+    <link rel="stylesheet" href="https://site-assets.fontawesome.com/releases/v6.5.1/css/sharp-thin.css">
+    <link rel="stylesheet" href="https://site-assets.fontawesome.com/releases/v6.5.1/css/sharp-solid.css">
+    <link rel="stylesheet" href="https://site-assets.fontawesome.com/releases/v6.5.1/css/sharp-regular.css">
+    <link rel="stylesheet" href="https://site-assets.fontawesome.com/releases/v6.5.1/css/sharp-light.css">
+</head>
+
+<body class="authentication-bg position-relative">
     <?php /* Debug panel is now commented out
     <?php if ($show_debug): ?>
     <!-- Debug information panel -->
@@ -99,126 +158,86 @@ $show_debug = false;
         <?php endif; ?>
     </div>
     <?php endif; ?>
-    */ ?>
-    
-    <!-- Debug console output is also commented out -->
-    <!-- <script>    
-    document.addEventListener('DOMContentLoaded', function() {
-        const emailSpan = document.querySelector('.fw-semibold');
-        if (!emailSpan.textContent.trim()) {
-            const localEmail = localStorage.getItem('verification_email');
-            if (localEmail) {
-                console.log("Using email from localStorage:", localEmail);
-                emailSpan.textContent = localEmail;
-            } else {
-                console.log("No email found in localStorage either");
-            }
-        } else {
-            console.log("Using email from PHP session:", emailSpan.textContent);
-        }
-    });
-    </script> -->
-
-    <!-- auth page content -->
-    <div class="auth-page-content">
+    */ ?>    <!-- auth page content -->
+    <div class="account-pages pt-2 pt-sm-5 pb-4 pb-sm-5 position-relative">
         <div class="container">
-            <div class="row">
-                <div class="col-lg-12">
-                    <div class="text-center mt-sm-5 mb-4 text-white-50">
-                        <div>
-                            <a href="index.html" class="d-inline-block auth-logo">
-                                <img src="assets/images/logo-light.png" alt="" height="20">
-                            </a>
-                        </div>
-                        <p class="mt-3 fs-15 fw-medium"></p>
-                    </div>
-                </div>
-            </div>
-            <!-- end row -->
-
             <div class="row justify-content-center">
-                <div class="col-md-10 col-lg-8 col-xl-6">
-                    <div class="card mt-4 card-bg-fill">
+                <div class="col-xxl-8 col-lg-9">
+                    <div class="card">
+                        <!-- Logo -->
+                        <div class="card-header text-center bg-dark">
+                            <span><img src="../images/logo2.png" height="100"></span>
+                        </div>
 
                         <div class="card-body p-4">
-                            <div class="mb-4">
-                                <div class="avatar-lg mx-auto">
-                                    <div class="avatar-title bg-light text-primary display-5 rounded-circle">
-                                        <i class="ri-mail-line"></i>
-                                    </div>
-                                </div>
+                            <div class="text-center w-75 m-auto">
+                                <h4 class="text-dark-50 text-center pb-0 fw-bold">Verificación de Correo Electrónico</h4>
+                                <p class="text-muted mb-4">Por favor ingresa el código de 6 dígitos enviado a <span class="fw-semibold"><?php echo htmlspecialchars($verification_email); ?></span></p>
                             </div>
 
-                            <div class="p-2 mt-4">
-                                <div class="text-muted text-center mb-4 mx-lg-3">
-                                    <h4>Verify Your Email</h4>
-                                    <p>Please enter the 6 digit code sent to <span class="fw-semibold"><?php echo htmlspecialchars($verification_email); ?></span></p>
-                                </div>
-
-                                <form id="verificationForm" autocomplete="off">
-                                    <div class="row">
-                                        <div class="col-2">
-                                            <div class="mb-3">
-                                                <label for="digit1-input" class="visually-hidden">Digit 1</label>
-                                                <input type="text" class="form-control form-control-lg bg-light border-light text-center" onkeyup="moveToNext(1, event)" maxLength="1" id="digit1-input">
-                                            </div>
-                                        </div><!-- end col -->
-
-                                        <div class="col-2">
-                                            <div class="mb-3">
-                                                <label for="digit2-input" class="visually-hidden">Digit 2</label>
-                                                <input type="text" class="form-control form-control-lg bg-light border-light text-center" onkeyup="moveToNext(2, event)" maxLength="1" id="digit2-input">
-                                            </div>
-                                        </div><!-- end col -->
-
-                                        <div class="col-2">
-                                            <div class="mb-3">
-                                                <label for="digit3-input" class="visually-hidden">Digit 3</label>
-                                                <input type="text" class="form-control form-control-lg bg-light border-light text-center" onkeyup="moveToNext(3, event)" maxLength="1" id="digit3-input">
-                                            </div>
-                                        </div><!-- end col -->
-
-                                        <div class="col-2">
-                                            <div class="mb-3">
-                                                <label for="digit4-input" class="visually-hidden">Digit 4</label>
-                                                <input type="text" class="form-control form-control-lg bg-light border-light text-center" onkeyup="moveToNext(4, event)" maxLength="1" id="digit4-input">
-                                            </div>
-                                        </div><!-- end col -->
-
-                                        <div class="col-2">
-                                            <div class="mb-3">
-                                                <label for="digit4-input" class="visually-hidden">Digit 5</label>
-                                                <input type="text" class="form-control form-control-lg bg-light border-light text-center" onkeyup="moveToNext(5, event)" maxLength="1" id="digit5-input">
-                                            </div>
-                                        </div><!-- end col -->
-
-                                        <div class="col-2">
-                                            <div class="mb-3">
-                                                <label for="digit4-input" class="visually-hidden">Digit 6</label>
-                                                <input type="text" class="form-control form-control-lg bg-light border-light text-center" onkeyup="moveToNext(6, event)" maxLength="1" id="digit6-input">
-                                            </div>
-                                        </div><!-- end col -->
-                                    </div>
+                            <form id="verificationForm" autocomplete="off">
+                                <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
                                 
-                                    <div class="mt-3">
-                                        <button type="button" id="verifyButton" class="btn btn-success w-100">Confirm</button>
-                                    </div>
-                                    
-                                    <div id="error-message" class="text-danger text-center mt-2" style="display: none;">
-                                        The verification code is incorrect. Please try again.
-                                    </div>
-                                </form>
+                                <div class="row justify-content-center">
+                                    <div class="col-2">
+                                        <div class="mb-3">
+                                            <label for="digit1-input" class="visually-hidden">Dígito 1</label>
+                                            <input type="text" class="form-control form-control-lg text-center" onkeyup="moveToNext(1, event)" maxLength="1" id="digit1-input">
+                                        </div>
+                                    </div><!-- end col -->
 
+                                    <div class="col-2">
+                                        <div class="mb-3">
+                                            <label for="digit2-input" class="visually-hidden">Dígito 2</label>
+                                            <input type="text" class="form-control form-control-lg text-center" onkeyup="moveToNext(2, event)" maxLength="1" id="digit2-input">
+                                        </div>
+                                    </div><!-- end col -->
+
+                                    <div class="col-2">
+                                        <div class="mb-3">
+                                            <label for="digit3-input" class="visually-hidden">Dígito 3</label>
+                                            <input type="text" class="form-control form-control-lg text-center" onkeyup="moveToNext(3, event)" maxLength="1" id="digit3-input">
+                                        </div>
+                                    </div><!-- end col -->
+
+                                    <div class="col-2">
+                                        <div class="mb-3">
+                                            <label for="digit4-input" class="visually-hidden">Dígito 4</label>
+                                            <input type="text" class="form-control form-control-lg text-center" onkeyup="moveToNext(4, event)" maxLength="1" id="digit4-input">
+                                        </div>
+                                    </div><!-- end col -->
+
+                                    <div class="col-2">
+                                        <div class="mb-3">
+                                            <label for="digit5-input" class="visually-hidden">Dígito 5</label>
+                                            <input type="text" class="form-control form-control-lg text-center" onkeyup="moveToNext(5, event)" maxLength="1" id="digit5-input">
+                                        </div>
+                                    </div><!-- end col -->
+
+                                    <div class="col-2">
+                                        <div class="mb-3">
+                                            <label for="digit6-input" class="visually-hidden">Dígito 6</label>
+                                            <input type="text" class="form-control form-control-lg text-center" onkeyup="moveToNext(6, event)" maxLength="1" id="digit6-input">
+                                        </div>
+                                    </div><!-- end col -->
+                                </div>
+                            
+                <div class="mt-3 text-center">
+                    <button type="button" id="verifyButton" class="btn btn-secondary w-100">
+                        <i class="fa-duotone fa-solid fa-check-circle fa-lg me-1"></i> Confirmar
+                    </button>
+                </div>
+                                
+                                <div id="error-message" class="text-danger text-center mt-2" style="display: none;">
+                                    El código de verificación es incorrecto. Por favor intenta nuevamente.
+                                </div>
+                            </form>                            <div class="mt-4 text-center">
+                                <p class="mb-0">¿No recibiste el código? <a href="<?php echo $_SERVER['PHP_SELF']; ?>?resend=true" class="fw-semibold text-primary text-decoration-underline">Reenviar</a></p>
                             </div>
                         </div>
                         <!-- end card body -->
                     </div>
                     <!-- end card -->
-
-                    <div class="mt-4 text-center">
-                        <p class="mb-0">Didn't receive a code? <a href="two-step.php?resend=true" class="fw-semibold text-primary text-decoration-underline">Resend</a> </p>
-                    </div>
-
                 </div>
             </div>
             <!-- end row -->
@@ -226,9 +245,14 @@ $show_debug = false;
         <!-- end container -->
     </div>
     <!-- end auth page content -->
-    <?php include 'assets/scripts.php'; ?>
 
-    <script>
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="../plugins/sweetalert2/sweetalert2.min.js"></script>
+    <script src="../plugins/bootstrap/js/bootstrap.bundle.min.js"></script>  <script src="../dist/js/vendor.min.js"></script>
+  <script src="../dist/js/app.js"></script>
+  <script src="../plugins/sweetalert2/sweetalert2.min.js"></script>
+  <script>
         function moveToNext(fieldIndex, event) {
             if (event.key === "Backspace" && fieldIndex > 1) {
                 document.getElementById('digit' + (fieldIndex - 1) + '-input').focus();
@@ -242,6 +266,9 @@ $show_debug = false;
         }
 
         document.addEventListener('DOMContentLoaded', function() {
+            // Focus the first input field when the page loads
+            document.getElementById('digit1-input').focus();
+            
             document.getElementById('verifyButton').addEventListener('click', function() {
                 let code = '';
                 for (let i = 1; i <= 6; i++) {
@@ -250,47 +277,81 @@ $show_debug = false;
                 
                 // Make sure we have a 6-digit code
                 if (code.length !== 6) {
-                    document.getElementById('error-message').style.display = 'block';
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Por favor ingresa los 6 dígitos del código.'
+                    });
                     return;
                 }
                 
+                // Mostrar indicador de carga en el botón
+                const $button = $('#verifyButton');
+                $button.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Verificando...');
+                
                 // Send the code to the server for verification
-                fetch('verify-code.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
+                $.ajax({
+                    url: 'verify-code.php',
+                    type: 'POST',
+                    data: {code: code},
+                    dataType: 'json',
+                    success: function(data) {
+                        if (data.success) {
+                            // Show success message and auto-redirect
+                            Swal.fire({
+                                title: '¡Éxito!',
+                                text: data.message || '¡Tu cuenta ha sido registrada exitosamente!',
+                                icon: 'success',
+                                timer: 2000,  // Auto close after 2 seconds
+                                timerProgressBar: true,
+                                showConfirmButton: false  // Remove the confirm button
+                            }).then(() => {
+                                // This will execute after the alert is closed (timer or dismiss)
+                                window.location.href = 'index.php';
+                            });
+                        } else {
+                            // Restaurar el botón
+                            $button.prop('disabled', false).html('<i class="fa-duotone fa-solid fa-check-circle fa-lg me-1"></i> Confirmar');
+                            // Show error message
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: data.message || 'El código de verificación es incorrecto. Por favor intenta nuevamente.'
+                            });
+                        }
                     },
-                    body: 'code=' + code
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Show success message and auto-redirect
-                        Swal.fire({
-                            title: 'Success!',
-                            text: 'Your account has been registered successfully!',
-                            icon: 'success',
-                            timer: 2000,  // Auto close after 2 seconds
-                            timerProgressBar: true,
-                            showConfirmButton: false  // Remove the confirm button
-                        }).then(() => {
-                            // This will execute after the alert is closed (timer or dismiss)
-                            window.location.href = 'index.php';
-                        });
-                    } else {
+                    error: function(error) {
+                        console.error('Error:', error);
+                        // Restaurar el botón
+                        $button.prop('disabled', false).html('<i class="fa-duotone fa-solid fa-check-circle fa-lg me-1"></i> Confirmar');
                         // Show error message
-                        document.getElementById('error-message').style.display = 'block';
-                        document.getElementById('error-message').textContent = data.message;
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Ocurrió un error. Por favor intenta nuevamente.'
+                        });
                     }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    document.getElementById('error-message').style.display = 'block';
-                    document.getElementById('error-message').textContent = 'An error occurred. Please try again.';
                 });
             });
-        });
-    </script>
+            
+            // También permitir al usuario presionar Enter para enviar el código
+            const inputs = document.querySelectorAll('#verificationForm input');
+            inputs.forEach(function(input) {
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        document.getElementById('verifyButton').click();
+                    }
+                });
+            });
+        });    </script>
 </body>
+
+<footer class="footer footer-alt fw-medium">
+    <span>
+      <script>
+        document.write(new Date().getFullYear())
+      </script> - MFA
+    </span>
+</footer>
 
 </html>

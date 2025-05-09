@@ -26,7 +26,7 @@ $hasOTP = false;
 $notificationCount = 0;
 $notificationClass = "danger"; // Default to danger (red) for security issues
 $notificationMessage = "Favor verificar tu cuenta";
-$notificationLink = "two-step.php";
+$notificationLink = dirname($_SERVER['PHP_SELF']) . "/two-step.php";
 $notificationIcon = "fas fa-shield-alt";
 $notificationTime = "Ahora";
 
@@ -46,32 +46,21 @@ if (!$hasOTP) {
 ?>
 
 <!-- Right navbar links -->
-<ul class="navbar-nav ml-auto">
-  <li class="nav-item dropdown">
-    <a class="nav-link" data-toggle="dropdown" href="#" aria-expanded="false">
-      <i class="far fa-bell fa-lg"></i>
-      <?php if (!$hasOTP): ?>
-        <span class="badge badge-<?php echo $notificationClass; ?> navbar-badge" style="font-size: 0.6rem; right: 3px; top: 3px;">
-          <?php if ($notificationCount > 0) echo $notificationCount; ?>
-        </span>
-      <?php endif; ?>
+<ul class="navbar-nav ml-auto">  <?php if (!$hasOTP): ?>
+  <!-- 2FA configuration button for users without OTP -->
+  <li class="nav-item">
+    <a href="<?php echo dirname($_SERVER['PHP_SELF']); ?>/two-step.php" class="nav-link text-danger">
+      <i class="fas fa-shield-alt"></i> Configurar 2FA
     </a>
-    <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right" style="left: inherit; right: 0px;">
-      <span class="dropdown-item dropdown-header">Notificaciones de Seguridad</span>
-      <div class="dropdown-divider"></div>
-      <?php if (!$hasOTP): ?>
-        <a href="<?php echo $notificationLink; ?>" class="dropdown-item">
-          <p class="text-sm"><i class="<?php echo $notificationIcon; ?> mr-2 text-<?php echo $notificationClass; ?>"></i><?php echo $notificationMessage; ?></p>
-          <span class="float-right text-muted text-sm"><?php echo $notificationTime; ?></span>
-        </a>
-      <?php else: ?>
-        <a href="#" class="dropdown-item">
-          <p class="text-sm"><i class="<?php echo $notificationIcon; ?> mr-2 text-<?php echo $notificationClass; ?>"></i><?php echo $notificationMessage; ?></p>
-          <span class="float-right text-muted text-sm"><?php echo $notificationTime; ?></span>
-        </a>
-      <?php endif; ?>
-    </div>
   </li>
+  <?php else: ?>
+  <!-- Verified account indicator for users with OTP -->
+  <li class="nav-item">
+    <span class="nav-link text-success">
+      <i class="fas fa-check-circle"></i> Cuenta verificada
+    </span>
+  </li>
+  <?php endif; ?>
   <li class="nav-item dropdown user-menu">
     <a class="nav-link dropdown-toggle" data-toggle="dropdown">
       <img src="<?php echo $photoSrc; ?>" class="user-image img-circle" alt="User Image">
