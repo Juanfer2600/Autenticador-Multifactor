@@ -15,5 +15,10 @@ return [
     'roles' => [
         'vista' => 'views/system/roles.php',
         'scripts' => ['scripts/system/roles_scripts.php']
-    ]
+    ],
+    'metodos_mfa' => [
+        'vista' => 'views/system/metodos_mfa.php',
+        'scripts' => ['scripts/system/metodos_mfa_scripts.php']
+    ],
+
 ];
