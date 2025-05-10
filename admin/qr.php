@@ -13,27 +13,7 @@ if (isset($_SESSION['admin'])) {
     exit();
 }
 
-// Obtengo métodos MFA activos
-$mfa_methods = [];
-try {
-    $stmt = $conn->prepare("
-      SELECT tipo_metodo 
-      FROM metodos_mfa 
-      WHERE estado = 1 
-        AND tipo_metodo IN ('QR','Reconocimiento facial')
-    ");
-    $stmt->execute();
-    while ($r = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        $mfa_methods[$r['tipo_metodo']] = true;
-    }
-} catch (PDOException $e) {
-    // silencio
-}
-
 $csrf_token = generateCSRFToken();
-// Aquí deberías obtener la “semilla” de usuario para el QR
-// $user_secret = getUserSecret(...);
-// Función de ejemplo para generar QR en Base64
 function generarQR($secret)
 {
     return '';
@@ -44,17 +24,18 @@ function generarQR($secret)
 
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Login MFA</title>
-    <!-- Bootstrap 5 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- SweetAlert2 -->
-    <link rel="stylesheet" href="../plugins/sweetalert2/sweetalert2.min.css">
-    <!-- Bootstrap Icons + FontAwesome -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="https://site-assets.fontawesome.com/releases/v6.5.1/css/all.css" rel="stylesheet">
-    <!-- Tu CSS -->
-    <link href="../dist/css/app.css" rel="stylesheet" id="app-style">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Login</title>
+    <link rel="icon" href="../images/favicon.png">
+    <link rel="stylesheet" href="../plugins/sweetalert2/sweetalert2.css">
+    <script src="../dist/js/config.js"></script>
+    <link href="../dist/css/app.css" rel="stylesheet" type="text/css" id="app-style" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://site-assets.fontawesome.com/releases/v6.5.1/css/all.css">
+    <link rel="stylesheet" href="https://site-assets.fontawesome.com/releases/v6.5.1/css/sharp-thin.css">
+    <link rel="stylesheet" href="https://site-assets.fontawesome.com/releases/v6.5.1/css/sharp-solid.css">
+    <link rel="stylesheet" href="https://site-assets.fontawesome.com/releases/v6.5.1/css/sharp-regular.css">
+    <link rel="stylesheet" href="https://site-assets.fontawesome.com/releases/v6.5.1/css/sharp-light.css">
     <style>
         .step-indicator {
             list-style: none;
@@ -197,8 +178,7 @@ function generarQR($secret)
                                 </div>
 
                                 <div class="d-flex justify-content-center mb-4">
-                                    <img src="data:image/png;base64,<?php echo generarQR($user_secret); ?>"
-                                        alt="Código QR" class="border p-2">
+                                    <div id="qr"></div>
                                 </div>
 
                                 <div class="d-flex justify-content-between">
@@ -226,6 +206,8 @@ function generarQR($secret)
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="../plugins/sweetalert2/sweetalert2.all.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Add QRCode.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <script>
         $(function() {
             const $form = $('#loginForm'),
@@ -251,7 +233,38 @@ function generarQR($secret)
                 } else {
                     $mainTitle.text('Verificación MFA');
                     $subTitle.text('Escanea el código QR con tu aplicación');
+
+                    // Generar código QR
+                    generateQR();
                 }
+            }
+
+            // Función para generar el código QR
+            function generateQR() {
+                let qrGen = document.querySelector('#qr');
+                qrGen.innerHTML = "";
+                const QR = new QRCode(qrGen, {
+                    width: 150,
+                    height: 150,
+                    margin: 2,
+                });
+
+                // Generar un QR con una URL de ejemplo (reemplazar con datos reales)
+                QR.makeCode("otpauth://totp/AutoMFA:usuario@ejemplo.com?secret=ABCDEFGHIJKLMNOP&issuer=AutoMFA");
+
+                setTimeout(() => {
+                    const originalCanvas = qrGen.querySelector('canvas');
+                    const margin = 10;
+                    const newCanvas = document.createElement('canvas');
+                    newCanvas.width = originalCanvas.width + (margin * 2);
+                    newCanvas.height = originalCanvas.height + (margin * 2);
+                    const ctx = newCanvas.getContext('2d');
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.fillRect(0, 0, newCanvas.width, newCanvas.height);
+                    ctx.drawImage(originalCanvas, margin, margin);
+                    qrGen.innerHTML = '';
+                    qrGen.appendChild(newCanvas);
+                }, 100);
             }
 
             $('#btnStep1Next').click(function() {
