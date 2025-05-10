@@ -40,10 +40,24 @@ function checkSession()
 
 checkSession();
 
-if (!isset($_SESSION['admin']) || trim($_SESSION['admin']) == '')
+if (!isset($_SESSION['admin']) || (is_string($_SESSION['admin']) && trim($_SESSION['admin']) == '') || empty($_SESSION['admin']))
 {
 	header('location: index.php');
 	exit();
+}
+
+// Asegurarse de que $_SESSION['admin'] sea un valor escalar (número o string)
+if (is_array($_SESSION['admin'])) {
+    // Si es un array, intentamos obtener el ID (probablemente está en ['id'])
+    if (isset($_SESSION['admin']['id'])) {
+        $_SESSION['admin'] = $_SESSION['admin']['id'];
+    } else {
+        // Si no tiene un índice 'id', destruir la sesión y redirigir
+        session_unset();
+        session_destroy();
+        header('location: index.php');
+        exit();
+    }
 }
 
 $sql = "SELECT * FROM admin WHERE id = ?";
