@@ -141,7 +141,7 @@ $csrf_token = generateCSRFToken();
             <ul class="list-inline mt-2 mb-0">
               <?php if (isset($mfa_methods['QR'])): ?>
               <li class="list-inline-item">
-                <a href="#"><i class="fa-solid fa-duotone fa-qrcode fa-2x"></i></a>
+                <a href="qr.php"><i class="fa-solid fa-duotone fa-qrcode fa-2x"></i></a>
               </li>
               <?php endif; ?>
               <?php if (isset($mfa_methods['Reconocimiento facial'])): ?>
