@@ -17,7 +17,7 @@ if (isset($_SESSION['admin'])) {
 // Fetch active MFA methods from the database
 $mfa_methods = [];
 try {
-    $stmt = $conn->prepare("SELECT id, tipo_metodo FROM metodos_mfa WHERE estado = 0 AND tipo_metodo IN ('QR', 'Reconocimiento facial')");
+    $stmt = $conn->prepare("SELECT id, tipo_metodo FROM metodos_mfa WHERE estado = 1 AND tipo_metodo IN ('QR', 'Reconocimiento facial')");
     $stmt->execute();
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $mfa_methods[$row['tipo_metodo']] = true;
