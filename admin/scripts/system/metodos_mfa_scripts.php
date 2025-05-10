@@ -58,6 +58,25 @@
             });
         });
 
+        // Add event handler for toggle button
+        $('#metodo').on('click', '.toggle', function() {
+            const id = $(this).data('id');
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: "Esto cambiará el estado del método MFA",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sí, cambiar estado',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    manageRole('toggle', { id });
+                }
+            });
+        });
+
         function loadTable() {
             const table = $('#metodo').DataTable({
                 ajax: 'includes/system/metodos_mfa_crud.php?crud=fetch',
@@ -67,6 +86,10 @@
                     },
                     {
                         data: 'tipo_metodo'
+                    },
+                    {
+                        data: 'estado',
+                        className: 'text-center'
                     },
                     {
                         data: 'actions',

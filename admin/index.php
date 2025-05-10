@@ -7,10 +7,23 @@ if (!file_exists(__DIR__ . '/../.env')) {
 
 require_once 'includes/session_config.php';
 require_once 'includes/security_functions.php';
+require_once '../config/db_conn.php';
 
 if (isset($_SESSION['admin'])) {
   header('location:home.php');
   exit();
+}
+
+// Fetch active MFA methods from the database
+$mfa_methods = [];
+try {
+    $stmt = $conn->prepare("SELECT id, tipo_metodo FROM metodos_mfa WHERE estado = 0 AND tipo_metodo IN ('QR', 'Reconocimiento facial')");
+    $stmt->execute();
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $mfa_methods[$row['tipo_metodo']] = true;
+    }
+} catch (PDOException $e) {
+    // Silently handle errors
 }
 
 $csrf_token = generateCSRFToken();
@@ -126,12 +139,16 @@ $csrf_token = generateCSRFToken();
           <div class="mt-4 text-center">
             <p class="text-muted mb-0">Inicia sesión con</p>
             <ul class="list-inline mt-2 mb-0">
+              <?php if (isset($mfa_methods['QR'])): ?>
               <li class="list-inline-item">
                 <a href="#"><i class="fa-solid fa-duotone fa-qrcode fa-2x"></i></a>
               </li>
+              <?php endif; ?>
+              <?php if (isset($mfa_methods['Reconocimiento facial'])): ?>
               <li class="list-inline-item">
                 <a href="#"><i class="fa-solid fa-duotone fa-face-viewfinder fa-2x"></i></a>
               </li>
+              <?php endif; ?>
             </ul>
           </div>
 

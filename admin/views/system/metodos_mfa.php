@@ -25,6 +25,7 @@ if (!in_array(1, $roles_ids)) {
                         <thead class="text-center">
                             <th>ID</th>
                             <th>Método</th>
+                            <th>Estado</th>
                             <th>Acciones</th>
                         </thead>
                         <tbody></tbody>

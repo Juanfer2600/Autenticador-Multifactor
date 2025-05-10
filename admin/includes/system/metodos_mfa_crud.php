@@ -20,6 +20,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $result = $metodoController->getMetodo($_POST['id']);
             echo json_encode($result);
             break;
+        case 'toggle':
+            $result = $metodoController->toggleEstado($_POST['id']);
+            echo json_encode($result);
+            break;
     }
 } elseif (isset($_GET['crud']) && $_GET['crud'] === 'fetch') {
     $result = $metodoController->getAllMetodos();
